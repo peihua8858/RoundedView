@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RoundView">
+        <attr name="rv_radius" format="dimension" />
+        <attr name="rv_borderWidth" format="dimension" />
+        <attr name="rv_borderColor" format="color" />
+        <attr name="rv_drawBorder" format="boolean" />
+    </declare-styleable>
+</resources>

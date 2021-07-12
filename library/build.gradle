@@ -1,0 +1,81 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 30
+//    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        minSdkVersion 18
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+    buildTypes {
+        release {
+            // 启用debug模式，控制Log打印
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            renderscriptOptimLevel 3
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        // 开发版，正式服务器环境，Log打开，debug模式打开，混淆关闭
+        release_display_log {
+            // 启用debug模式，控制Log打印
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            renderscriptOptimLevel 3
+        }
+        deploy {
+            // 启用debug模式，控制Log打印
+            debuggable true
+            jniDebuggable false
+            renderscriptDebuggable false
+            renderscriptOptimLevel 3
+        }
+        // 开发版，正式服务器环境，Log打开，debug模式打开，混淆关闭
+        develop {
+            debuggable true
+            jniDebuggable false
+            renderscriptDebuggable false
+            renderscriptOptimLevel 3
+            ext.alwaysUpdateBuildId = false
+        }
+        // 开发版，正式服务器环境，Log打开，debug模式打开，混淆关闭
+        developPay {
+            debuggable true
+            jniDebuggable false
+            renderscriptDebuggable false
+            renderscriptOptimLevel 3
+            ext.alwaysUpdateBuildId = false
+        }
+        // 开发版，正式服务器环境，Log打开，debug模式打开，混淆关闭
+        developTrack {
+            debuggable true
+            jniDebuggable false
+            renderscriptDebuggable false
+            renderscriptOptimLevel 3
+            ext.alwaysUpdateBuildId = false
+        }
+        debug {
+            debuggable true
+            jniDebuggable false
+            renderscriptDebuggable false
+            renderscriptOptimLevel 3
+            ext.alwaysUpdateBuildId = false
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+}
+//apply from: "push_maven.gradle"
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.peihua8858'
