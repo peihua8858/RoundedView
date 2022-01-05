@@ -58,9 +58,9 @@ public class CircleConstraintLayout extends ConstraintLayout {
     }
 
     @Override
-    public void dispatchDraw(Canvas canvas) {
+    public void draw(Canvas canvas) {
         mRoundViewDelegate.canvasSetLayer(canvas);
-        super.dispatchDraw(canvas);
+        super.draw(canvas);
         mRoundViewDelegate.drawBorders(canvas);
         canvas.restore();
     }
