@@ -26,7 +26,7 @@ afterEvaluate {
             release(MavenPublication) {
                 groupId = 'com.github.peihua8858.RoundedView'
                 artifactId = 'compiler'
-                version = '1.0.0'
+                version = '1.0.3'
                 from(components.getByName("java"))
             }
         }

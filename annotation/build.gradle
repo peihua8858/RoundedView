@@ -19,7 +19,7 @@ afterEvaluate {
             release(MavenPublication) {
                 groupId = 'com.github.peihua8858.RoundedView'
                 artifactId = 'annotation'
-                version = '1.0.0'
+                version = '1.0.3'
                 from(components.getByName("java"))
             }
         }
