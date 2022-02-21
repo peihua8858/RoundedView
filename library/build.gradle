@@ -1,5 +1,7 @@
-apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+}
 android {
     compileSdkVersion 30
 //    buildToolsVersion "29.0.3"
@@ -80,16 +82,34 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'com.github.peihua8858.ImageLoader:imageloader:1.0.8'
 }
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+task javadoc(type: Javadoc) {
+    options.encoding = "utf-8"
+    //添加classpath，解析类型
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
 group = 'com.github.peihua8858'
 afterEvaluate {
     publishing {
         publications {
             // Creates a Maven publication called "release".
-            release(MavenPublication) {
+            maven(MavenPublication) {
+//                from components.release
                 groupId = 'com.github.peihua8858'
                 artifactId = 'RoundedView'
-                version = '1.0.0'
-//                from(components.getByName("java"))
+                version = '1.0.2'
+                artifact bundleReleaseAar
+                artifact sourceJar
+//                artifact javadocJar
             }
         }
     }
