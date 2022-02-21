@@ -1,0 +1,36 @@
+plugins {
+    id 'java-library'
+    id 'kotlin'
+    id 'maven-publish'
+//    id 'kotlin-kapt'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+dependencies {
+    compileOnly project(':annotation')
+//    compileOnly 'com.fz.badgeview:annotation:1.0.0'
+    compileOnly 'com.google.auto.service:auto-service:1.0.1'
+    implementation 'com.google.auto:auto-common:1.2'
+    implementation 'com.squareup:javapoet:1.12.1'
+    implementation "net.ltgt.gradle.incap:incap:0.3"
+    compileOnly "net.ltgt.gradle.incap:incap-processor:0.3"
+}
+group = 'com.github.peihua8858'
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                groupId = 'com.github.peihua8858.RoundedView'
+                artifactId = 'compiler'
+                version = '1.0.0'
+                from(components.getByName("java"))
+            }
+        }
+    }
+}
+//apply from: "push_local_maven.gradle"
+//apply from: "push_maven.gradle"

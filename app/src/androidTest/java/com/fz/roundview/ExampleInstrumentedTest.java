@@ -1,4 +1,4 @@
-package com.fz.roundedview;
+package com.fz.roundview;
 
 import android.content.Context;
 

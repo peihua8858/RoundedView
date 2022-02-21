@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="40dp">
+
+<!--    <com.fz.roundview.RoundedFrameLayout-->
+<!--        android:id="@+id/cfl_view"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="@android:color/transparent"-->
+<!--        app:rv_borderColor="@color/purple_200"-->
+<!--        app:rv_borderWidth="0dp"-->
+<!--        app:rv_radius="8dp">-->
+
+<!--        <com.fz.imageloader.widget.RatioImageView-->
+<!--            android:id="@+id/riv_image"-->
+<!--            android:layout_width="100dp"-->
+<!--            android:layout_height="100dp"-->
+<!--            android:scaleType="centerCrop" />-->
+<!--    </com.fz.roundview.RoundedFrameLayout>-->
+<!--    <com.fz.roundview.demo.RoundedFrameLayout-->
+<!--        android:id="@+id/cfl_view2"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="@android:color/transparent"-->
+<!--        app:rv_borderColor="@color/purple_200"-->
+<!--        app:rv_borderWidth="3dp"-->
+<!--        app:rv_drawCircle="true"-->
+<!--        app:rv_radius="50dp">-->
+
+<!--        <com.fz.imageloader.widget.RatioImageView-->
+<!--            android:id="@+id/riv_image2"-->
+<!--            android:layout_width="100dp"-->
+<!--            android:layout_height="100dp"-->
+<!--            android:scaleType="centerCrop" />-->
+<!--    </com.fz.roundview.demo.RoundedFrameLayout>-->
+<!--    <com.fz.roundview.RoundedRatioImageView-->
+<!--        android:id="@+id/rriv_image"-->
+<!--        android:layout_width="100dp"-->
+<!--        android:layout_marginTop="40dp"-->
+<!--        android:layout_height="100dp"-->
+<!--        android:scaleType="centerCrop"-->
+<!--        app:rv_borderColor="@color/purple_200"-->
+<!--        app:rv_borderWidth="3dp"-->
+<!--        app:rv_drawCircle="true"-->
+<!--        app:rv_radius="50dp"/>-->
+<!--    <com.fz.roundview.RoundedTextView-->
+<!--        android:id="@+id/rtv_text"-->
+<!--        android:layout_width="100dp"-->
+<!--        android:layout_marginTop="40dp"-->
+<!--        android:layout_height="100dp"-->
+<!--        android:scaleType="centerCrop"-->
+<!--        app:rv_borderColor="@color/purple_200"-->
+<!--        app:rv_borderWidth="3dp"-->
+<!--        app:rv_drawCircle="true"-->
+<!--        app:rv_radius="50dp"/>-->
+</LinearLayout>

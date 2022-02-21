@@ -10,7 +10,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.view.View;
 
 /**
  * 绘制圆角视图的代理，注意需要给当前视图设置背景，如果没有背景可以设置成透明
@@ -28,7 +27,7 @@ public class RoundViewDelegate {
     private final Paint maskPaint = new Paint();
     private final Paint zonePaint = new Paint();
     private boolean isDrawCircle = false;
-    private View mView;
+    private IRoundedView mRoundedView;
     private float mBorderWidth;
     private int mBorderColor;
     private Paint paint;
@@ -41,14 +40,15 @@ public class RoundViewDelegate {
      */
     private boolean isDrawBorder;
 
-    public RoundViewDelegate(View view, Context context, AttributeSet attrs) {
-        this.mView = view;
+    public RoundViewDelegate(IRoundedView view, Context context, AttributeSet attrs) {
+        this.mRoundedView = view;
         if (attrs != null) {
             TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.RoundView);
             mRadius = ta.getDimension(R.styleable.RoundView_rv_radius, 0);
             mBorderWidth = ta.getDimension(R.styleable.RoundView_rv_borderWidth, 0);
             mBorderColor = ta.getColor(R.styleable.RoundView_rv_borderColor, Color.TRANSPARENT);
             isDrawBorder = ta.getBoolean(R.styleable.RoundView_rv_drawBorder, (mBorderWidth > 0));
+            isDrawCircle = ta.getBoolean(R.styleable.RoundView_rv_drawCircle,false);
             ta.recycle();
         }
         init();
@@ -72,8 +72,8 @@ public class RoundViewDelegate {
      */
     public void setBorderWidth(float borderWidth) {
         this.mBorderWidth = borderWidth;
-        if (mView != null) {
-            mView.invalidate();
+        if (mRoundedView != null) {
+            mRoundedView.postInvalidate();
         }
     }
 
@@ -87,8 +87,8 @@ public class RoundViewDelegate {
      */
     public void setBorderColor(int borderColor) {
         this.mBorderColor = borderColor;
-        if (mView != null) {
-            mView.invalidate();
+        if (mRoundedView != null) {
+            mRoundedView.postInvalidate();
         }
     }
 
@@ -102,8 +102,8 @@ public class RoundViewDelegate {
      */
     public void setDrawBorder(boolean drawBorder) {
         isDrawBorder = drawBorder;
-        if (mView != null) {
-            mView.invalidate();
+        if (mRoundedView != null) {
+            mRoundedView.postInvalidate();
         }
     }
 
@@ -114,8 +114,8 @@ public class RoundViewDelegate {
      */
     public void setRadius(float radius) {
         this.mRadius = radius;
-        if (mView != null) {
-            mView.invalidate();
+        if (mRoundedView != null) {
+            mRoundedView.postInvalidate();
         }
     }
 
@@ -147,8 +147,8 @@ public class RoundViewDelegate {
      */
     public void canvasSetLayer(Canvas canvas) {
         CanvasCompat.saveLayer(canvas, roundRect, zonePaint);
-        int width = mView.getWidth();
-        int height = mView.getHeight();
+        int width = mRoundedView.getWidth();
+        int height = mRoundedView.getHeight();
         if (isDrawCircle) {
             canvas.drawCircle(width / 2f, height / 2f, mRadius, zonePaint);
         } else {
@@ -172,7 +172,7 @@ public class RoundViewDelegate {
             paint.setColor(mBorderColor);
             paint.setStyle(Paint.Style.STROKE);
             if (isDrawCircle) {
-                path.addCircle(mView.getWidth() / 2.0f, mView.getHeight() / 2.0f,
+                path.addCircle(mRoundedView.getWidth() / 2.0f, mRoundedView.getHeight() / 2.0f,
                         mRadius, Path.Direction.CCW);
             } else {
                 path.addRoundRect(roundRect, new float[]{mRadius, mRadius,
