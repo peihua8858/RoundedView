@@ -2,6 +2,10 @@
 <resources>
     <declare-styleable name="RoundView">
         <attr name="rv_radius" format="dimension" />
+        <attr name="rv_left_top_radius" format="dimension" />
+        <attr name="rv_left_bottom_radius" format="dimension" />
+        <attr name="rv_right_top_radius" format="dimension" />
+        <attr name="rv_right_bottom_radius" format="dimension" />
         <attr name="rv_borderWidth" format="dimension" />
         <attr name="rv_borderColor" format="color" />
         <attr name="rv_drawBorder" format="boolean" />

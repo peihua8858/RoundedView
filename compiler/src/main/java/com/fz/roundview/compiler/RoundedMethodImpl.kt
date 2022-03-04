@@ -1,9 +1,6 @@
 package com.fz.roundview.compiler
 
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.TypeName
-import com.squareup.javapoet.TypeSpec
+import com.squareup.javapoet.*
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Modifier
 
@@ -76,6 +73,16 @@ class RoundedMethodImpl(packageName: String, processingEnv: ProcessingEnvironmen
             .addAnnotation(Override::class.java)
             .addModifiers(Modifier.PUBLIC)
             .addParameter(TypeName.FLOAT, "radius")
+            .addStatement("mRoundViewDelegate.setRadius(radius)")
+            .build()
+        typeBuilder.addMethod(methodSpec)
+    }
+
+    override fun setRadiusArr(typeBuilder: TypeSpec.Builder) {
+        val methodSpec = MethodSpec.methodBuilder("setRadius")
+            .addAnnotation(Override::class.java)
+            .addModifiers(Modifier.PUBLIC)
+            .addParameter(ArrayTypeName.of(TypeName.FLOAT), "radius")
             .addStatement("mRoundViewDelegate.setRadius(radius)")
             .build()
         typeBuilder.addMethod(methodSpec)

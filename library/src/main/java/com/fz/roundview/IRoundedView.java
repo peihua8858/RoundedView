@@ -39,7 +39,12 @@ public interface IRoundedView {
      * @param radius
      */
     void setRadius(float radius);
-
+    /**
+     * 设置圆角半径
+     *
+     * @param radius 8 个值的数组，4 对 [X,Y] 半径
+     */
+    void setRadius(float[] radius);
     /**
      * 设置是否绘制成圆形
      *

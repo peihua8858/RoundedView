@@ -174,6 +174,7 @@ class RoundedProcessor : AbstractProcessor() {
             setDrawBorder(typeBuilder)
             setBorderColor(typeBuilder)
             setRadius(typeBuilder)
+            setRadiusArr(typeBuilder)
             setDrawCircle(typeBuilder)
             onLayout(typeBuilder)
             onDraw(typeBuilder)

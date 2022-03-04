@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:round="http://schemas.android.com/apk/com.fz.roundview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -57,4 +58,18 @@
 <!--        app:rv_borderWidth="3dp"-->
 <!--        app:rv_drawCircle="true"-->
 <!--        app:rv_radius="50dp"/>-->
+<!--    <com.fz.roundview.RoundedRatioImageView-->
+<!--        android:id="@+id/rriv_image"-->
+<!--        android:layout_width="100dp"-->
+<!--        android:layout_height="100dp"-->
+<!--        android:layout_marginTop="40dp"-->
+<!--        android:scaleType="centerCrop"-->
+<!--        app:rv_borderColor="@color/purple_200"-->
+<!--        app:rv_borderWidth="3dp"-->
+
+<!--        />-->
+<!--      app:rv_left_bottom_radius="20dp"
+        app:rv_right_top_radius="20dp"
+        app:rv_left_top_radius="20dp"
+        app:rv_right_bottom_radius="20dp"-->
 </LinearLayout>

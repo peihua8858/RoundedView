@@ -24,6 +24,23 @@ public class RoundViewDelegate {
      * 半径，单位像素
      */
     private float mRadius = 10;
+    private float[] mRadiusArr;
+    /**
+     * 半径，单位像素
+     */
+    private float mLeftTopRadius = 10;
+    /**
+     * 半径，单位像素
+     */
+    private float mLeftBottomRadius = 10;
+    /**
+     * 半径，单位像素
+     */
+    private float mRightTopRadius = 10;
+    /**
+     * 半径，单位像素
+     */
+    private float mRightBottomRadius = 10;
     private final Paint maskPaint = new Paint();
     private final Paint zonePaint = new Paint();
     private boolean isDrawCircle = false;
@@ -35,6 +52,7 @@ public class RoundViewDelegate {
      * 用来裁剪图片的ptah
      */
     private Path path;
+    private Path roundPath;
     /**
      * 是否绘制边框
      */
@@ -45,10 +63,14 @@ public class RoundViewDelegate {
         if (attrs != null) {
             TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.RoundView);
             mRadius = ta.getDimension(R.styleable.RoundView_rv_radius, 0);
+            mLeftTopRadius = ta.getDimension(R.styleable.RoundView_rv_left_top_radius, 0);
+            mLeftBottomRadius = ta.getDimension(R.styleable.RoundView_rv_left_bottom_radius, 0);
+            mRightTopRadius = ta.getDimension(R.styleable.RoundView_rv_right_top_radius, 0);
+            mRightBottomRadius = ta.getDimension(R.styleable.RoundView_rv_right_bottom_radius, 0);
             mBorderWidth = ta.getDimension(R.styleable.RoundView_rv_borderWidth, 0);
             mBorderColor = ta.getColor(R.styleable.RoundView_rv_borderColor, Color.TRANSPARENT);
             isDrawBorder = ta.getBoolean(R.styleable.RoundView_rv_drawBorder, (mBorderWidth > 0));
-            isDrawCircle = ta.getBoolean(R.styleable.RoundView_rv_drawCircle,false);
+            isDrawCircle = ta.getBoolean(R.styleable.RoundView_rv_drawCircle, false);
             ta.recycle();
         }
         init();
@@ -120,6 +142,18 @@ public class RoundViewDelegate {
     }
 
     /**
+     * 从新设置圆角
+     *
+     * @param radius
+     */
+    public void setRadius(float[] radius) {
+        this.mRadiusArr = radius;
+        if (mRoundedView != null) {
+            mRoundedView.postInvalidate();
+        }
+    }
+
+    /**
      * 是否绘制成圆形
      *
      * @author dingpeihua
@@ -152,7 +186,27 @@ public class RoundViewDelegate {
         if (isDrawCircle) {
             canvas.drawCircle(width / 2f, height / 2f, mRadius, zonePaint);
         } else {
-            canvas.drawRoundRect(roundRect, mRadius, mRadius, zonePaint);
+            if (roundPath == null) {
+                roundPath = new Path();
+            } else {
+                roundPath.reset();
+            }
+            if (mRadiusArr != null && mRadiusArr.length == 8) {
+                roundPath.addRoundRect(roundRect, mRadiusArr, Path.Direction.CCW);
+            } else if (mLeftTopRadius > 0 || mLeftBottomRadius > 0 || mRightTopRadius > 0 || mRightBottomRadius > 0) {
+                roundPath.addRoundRect(roundRect,
+                        new float[]{mLeftTopRadius, mLeftTopRadius,
+                                mRightTopRadius, mRightTopRadius,
+                                mRightBottomRadius, mRightBottomRadius,
+                                mLeftBottomRadius, mLeftBottomRadius}, Path.Direction.CCW);
+            } else {
+                roundPath.addRoundRect(roundRect,
+                        new float[]{mRadius, mRadius,
+                                mRadius, mRadius,
+                                mRadius, mRadius,
+                                mRadius, mRadius}, Path.Direction.CCW);
+            }
+            canvas.drawPath(roundPath, zonePaint);
         }
         CanvasCompat.saveLayer(canvas, roundRect, maskPaint);
     }
@@ -174,6 +228,12 @@ public class RoundViewDelegate {
             if (isDrawCircle) {
                 path.addCircle(mRoundedView.getWidth() / 2.0f, mRoundedView.getHeight() / 2.0f,
                         mRadius, Path.Direction.CCW);
+            } else if (mRadiusArr != null && mRadiusArr.length == 8) {
+                path.addRoundRect(roundRect, mRadiusArr, Path.Direction.CCW);
+            } else if (mLeftTopRadius > 0 || mLeftBottomRadius > 0 || mRightTopRadius > 0 || mRightBottomRadius > 0) {
+                path.addRoundRect(roundRect, new float[]{mLeftTopRadius, mLeftTopRadius,
+                                mRightTopRadius, mRightTopRadius, mRightBottomRadius, mRightBottomRadius, mLeftBottomRadius, mLeftBottomRadius,},
+                        Path.Direction.CCW);
             } else {
                 path.addRoundRect(roundRect, new float[]{mRadius, mRadius,
                                 mRadius, mRadius, mRadius, mRadius, mRadius, mRadius},

@@ -34,7 +34,12 @@ interface IRoundedMethod{
      * @param typeBuilder
      */
     fun setRadius(typeBuilder: TypeSpec.Builder)
-
+    /**
+     * 设置圆角半径
+     *
+     * @param typeBuilder
+     */
+    fun setRadiusArr(typeBuilder: TypeSpec.Builder)
     /**
      * 设置是否绘制成圆形
      *

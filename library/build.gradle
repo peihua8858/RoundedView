@@ -106,7 +106,7 @@ afterEvaluate {
 //                from components.release
                 groupId = 'com.github.peihua8858.RoundedView'
                 artifactId = 'api'
-                version = '1.0.3'
+                version = '1.0.4'
                 artifact bundleReleaseAar
                 artifact sourceJar
 //                artifact javadocJar
