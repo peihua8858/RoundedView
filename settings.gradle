@@ -11,7 +11,8 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "RoundedView"
-include ':app'
+//include ':app'
 include ':library'
 include ':annotation'
 include ':compiler'
+include ':roundview'

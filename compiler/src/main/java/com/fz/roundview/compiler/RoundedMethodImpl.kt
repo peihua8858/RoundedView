@@ -128,4 +128,17 @@ class RoundedMethodImpl(packageName: String, processingEnv: ProcessingEnvironmen
             .build()
         typeBuilder.addMethod(methodSpec)
     }
+
+    override fun setRoundedCorners(typeBuilder: TypeSpec.Builder) {
+        val methodSpec = MethodSpec.methodBuilder("setRoundedCorners")
+            .addAnnotation(Override::class.java)
+            .addModifiers(Modifier.PUBLIC)
+            .addParameter(TypeName.FLOAT, "leftTopRadius")
+            .addParameter(TypeName.FLOAT, "leftBottomRadius")
+            .addParameter(TypeName.FLOAT, "rightTopRadius")
+            .addParameter(TypeName.FLOAT, "rightBottomRadius")
+            .addStatement("mRoundViewDelegate.setRoundedCorners(leftTopRadius,leftBottomRadius,rightTopRadius,rightBottomRadius)")
+            .build()
+        typeBuilder.addMethod(methodSpec)
+    }
 }

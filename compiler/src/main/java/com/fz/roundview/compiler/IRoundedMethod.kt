@@ -5,8 +5,9 @@ import com.squareup.javapoet.TypeSpec
 /**
  * Created by dingpeihua on 2017/8/1.
  */
-interface IRoundedMethod{
+interface IRoundedMethod {
     fun constructor(typeBuilder: TypeSpec.Builder, clazz: String)
+
     /**
      * 设置边框宽度
      *
@@ -34,12 +35,14 @@ interface IRoundedMethod{
      * @param typeBuilder
      */
     fun setRadius(typeBuilder: TypeSpec.Builder)
+
     /**
      * 设置圆角半径
      *
      * @param typeBuilder
      */
     fun setRadiusArr(typeBuilder: TypeSpec.Builder)
+
     /**
      * 设置是否绘制成圆形
      *
@@ -53,10 +56,21 @@ interface IRoundedMethod{
      * @param typeBuilder
      */
     fun onLayout(typeBuilder: TypeSpec.Builder)
+
     /**
      * 重写视图绘制
      *
      * @param typeBuilder
      */
     fun onDraw(typeBuilder: TypeSpec.Builder)
+
+    /**
+     * 设置圆角半径
+     * @param typeBuilder
+     * @author dingpeihua
+     * @date 2023/10/12 18:16
+     * @version 1.0
+     */
+    fun setRoundedCorners(typeBuilder: TypeSpec.Builder)
+
 }

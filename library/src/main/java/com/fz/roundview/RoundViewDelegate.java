@@ -23,24 +23,24 @@ public class RoundViewDelegate {
     /**
      * 半径，单位像素
      */
-    private float mRadius = 10;
+    private float mRadius = 0;
     private float[] mRadiusArr;
     /**
      * 半径，单位像素
      */
-    private float mLeftTopRadius = 10;
+    private float mLeftTopRadius = 0;
     /**
      * 半径，单位像素
      */
-    private float mLeftBottomRadius = 10;
+    private float mLeftBottomRadius = 0;
     /**
      * 半径，单位像素
      */
-    private float mRightTopRadius = 10;
+    private float mRightTopRadius = 0;
     /**
      * 半径，单位像素
      */
-    private float mRightBottomRadius = 10;
+    private float mRightBottomRadius = 0;
     private final Paint maskPaint = new Paint();
     private final Paint zonePaint = new Paint();
     private boolean isDrawCircle = false;
@@ -151,6 +151,24 @@ public class RoundViewDelegate {
         if (mRoundedView != null) {
             mRoundedView.postInvalidate();
         }
+    }
+
+    /**
+     * 设置圆角
+     *
+     * @param leftTopRadius     左上角半径
+     * @param leftBottomRadius  左下角半径
+     * @param rightTopRadius    右上角半径
+     * @param rightBottomRadius 右下角半径
+     * @author dingpeihua
+     * @date 2023/10/12 18:23
+     * @version 1.0
+     */
+    public void setRoundedCorners(float leftTopRadius, float leftBottomRadius, float rightTopRadius, float rightBottomRadius) {
+        this.mLeftTopRadius = leftTopRadius;
+        this.mLeftBottomRadius = leftBottomRadius;
+        this.mRightTopRadius = rightTopRadius;
+        this.mRightBottomRadius = rightBottomRadius;
     }
 
     /**
