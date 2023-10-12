@@ -173,7 +173,6 @@ class RoundedProcessor : AbstractProcessor() {
     private fun generateMethod(typeBuilder: TypeSpec.Builder, clazz: String) {
         mBadgeableMethod?.apply {
             val methods = javaClass.declaredMethods
-            constructor(typeBuilder, clazz)
             for (method in methods) {
                 val parameters = method.parameters
                 if (parameters.size == 2) {
