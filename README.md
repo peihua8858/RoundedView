@@ -1,4 +1,4 @@
-# Android圆角视图
+:heartpulse:RoundedView-Android:heartpulse:
 一个可设置指定角为圆角的库
 
 [![Jitpack](https://jitpack.io/v/peihua8858/RoundedView.svg)](https://github.com/peihua8858)
@@ -54,7 +54,7 @@ dependencies {
 
 ## 进阶使用
 
-1、添加生成圆角视图注解
+### 1、添加生成圆角视图注解
 
 ```kotlin
 @RoundedView([RatioImageView::class, FrameLayout::class, LinearLayout::class, TextView::class, ConstraintLayout::class])
@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 }
 ```
 
-2、xml 布局引入
+### 2、xml 布局引入
 ```xml
  <com.fz.roundview.RoundedLinearLayout
         android:id="@+id/llPointRedeem"
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
             android:src="@mipmap/ic_ponts" />
 </com.fz.roundview.RoundedLinearLayout>
 ```
-3、字段说明
+### 3、 自定义属性说明
 ```xml
  <declare-styleable name="RoundView">
         <!-- 圆角半径 -->
@@ -118,6 +118,104 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         <attr name="rv_drawCircle" format="boolean"/>
     </declare-styleable>
 ```
+
+属性名 | 说明 | 默认值
+:----------- | :----------- | :-----------
+rv_radius         | 圆角半径        | 0dp
+rv_left_top_radius         | 左上角圆角半径        | 0dp
+rv_left_bottom_radius         | 左下角圆角半径        | 0dp
+rv_right_top_radius         | 右上角圆角半径        | 0dp
+rv_right_bottom_radius         | 右下角圆角半径        | 0dp
+rv_borderWidth         | 边框线宽度        | 0dp
+rv_borderColor         | 边框线颜色值        | Color.TRANSPARENT
+rv_drawBorder         | 是否绘制边框        | rv_borderWidth>0
+rv_drawCircle         | 是否是圆形       | false
+
+### 接口说明
+
+```java
+  /**
+     * 设置边框宽度
+     *
+     * @param borderWidth
+     */
+    void setBorderWidth(float borderWidth);
+
+    /**
+     * 设置是否绘制边框
+     *
+     * @param drawBorder
+     */
+    void setDrawBorder(boolean drawBorder);
+
+    /**
+     * 设置边框颜色
+     *
+     * @param borderColor
+     */
+    void setBorderColor(@ColorInt int borderColor);
+
+    /**
+     * 设置圆角半径
+     *
+     * @param radius
+     */
+    void setRadius(float radius);
+
+    /**
+     * 设置圆角半径
+     *
+     * @param radius 8 个值的数组，4 对 [X,Y] 半径
+     */
+    void setRadius(float[] radius);
+
+    /**
+     * 设置是否绘制成圆形
+     *
+     * @param drawCircle
+     */
+    void setDrawCircle(boolean drawCircle);
+
+    /**
+     * 获取视图的宽度
+     *
+     * @return
+     */
+    int getWidth();
+
+    /**
+     * 获取视图的高度
+     *
+     * @return
+     */
+    int getHeight();
+
+    /**
+     * 获取上下文
+     *
+     * @return
+     */
+    Context getContext();
+
+    /**
+     * 重新绘制
+     */
+    void postInvalidate();
+
+    /**
+     * 设置圆角
+     *
+     * @param leftTopRadius     左上角半径
+     * @param leftBottomRadius  左下角半径
+     * @param rightTopRadius    右上角半径
+     * @param rightBottomRadius 右下角半径
+     * @author dingpeihua
+     * @date 2023/10/12 18:23
+     * @version 1.0
+     */
+    void setRoundedCorners(float leftTopRadius, float leftBottomRadius, float rightTopRadius, float rightBottomRadius);
+```
+
 
 ## License
 
