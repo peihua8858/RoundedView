@@ -7,14 +7,14 @@
 
 
 ## 目录
--[Latest version](https://github.com/peihua8858/RoundedView/releases/tag/1.0.6-beta2)<br>
--[Download](#Download)<br>
--[Usage](#Usage)<br>
--[Issues](https://github.com/peihua8858/RoundedView/wiki/%E5%A6%82%E4%BD%95%E6%8F%90Issues%3F)<br>
+-[最新版本](https://github.com/peihua8858/RoundedView/releases/tag/1.0.6-beta2)<br>
+-[如何引用](#Download)<br>
+-[进阶使用](#Usage)<br>
+-[如何提Issues](https://github.com/peihua8858/RoundedView/wiki/%E5%A6%82%E4%BD%95%E6%8F%90Issues%3F)<br>
 -[License](#License)<br>
 
 
-## 如何引用
+## 进阶使用
 
 使用 Gradle
 
