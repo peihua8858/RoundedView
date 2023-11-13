@@ -133,7 +133,7 @@ rv_drawCircle         | 是否是圆形       | false
 
 ### 接口说明
 
-```java
+``` java
   /**
      * 设置边框宽度
      *
