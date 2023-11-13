@@ -16,18 +16,21 @@
 
 ## 如何引用
 
+* 把 `maven { url 'https://jitpack.io' }` 加入到 repositories 中
+* 添加如下依赖，末尾的「latestVersion」指的是PictureSelector [![Download](https://jitpack.io/v/peihua8858/RoundedView.svg)](https://jitpack.io/#peihua8858/RoundedView) 里的版本名称，请自行替换。
+
 使用 Gradle
 
 ```sh
 repositories {
   google()
-  mavenCentral()
+  maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation 'com.github.peihua8858.RoundedView:annotation:1.0.6-beta2'
-    kapt 'com.github.peihua8858.RoundedView:compiler:1.0.6-beta2'
-    implementation 'com.github.peihua8858.RoundedView:api:1.0.6-beta2'
+    implementation 'com.github.peihua8858.RoundedView:annotation:${latestVersion}'
+    kapt 'com.github.peihua8858.RoundedView:compiler:${latestVersion}'
+    implementation 'com.github.peihua8858.RoundedView:api:${latestVersion}'
 }
 ```
 
@@ -37,17 +40,17 @@ dependencies {
 <dependency>
   <groupId>com.github.peihua8858.RoundedView</groupId>
   <artifactId>annotation</artifactId>
-  <version>1.0.6-beta2</version>
+  <version>${latestVersion}</version>
 </dependency>
 <dependency>
   <groupId>com.github.peihua8858.RoundedView</groupId>
   <artifactId>compiler</artifactId>
-  <version>1.0.6-beta2</version>
+  <version>${latestVersion}</version>
 </dependency>
 <dependency>
   <groupId>com.github.peihua8858.RoundedView</groupId>
   <artifactId>api</artifactId>
-  <version>1.0.6-beta2</version>
+  <version>${latestVersion}</version>
 </dependency>
 ```
 
