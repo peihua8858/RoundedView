@@ -25,7 +25,6 @@ repositories {
 }
 
 dependencies {
-    // KotlinCommonUtils
     implementation 'com.github.peihua8858.RoundedView:annotation:1.0.6-beta2'
     kapt 'com.github.peihua8858.RoundedView:compiler:1.0.6-beta2'
     implementation 'com.github.peihua8858.RoundedView:api:1.0.6-beta2'
