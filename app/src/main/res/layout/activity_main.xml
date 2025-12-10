@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:round="http://schemas.android.com/apk/com.fz.roundview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="40dp">
 
-<!--    <com.fz.roundview.RoundedFrameLayout-->
+<!--    <com.peihua8858.roundview.RoundedFrameLayout-->
 <!--        android:id="@+id/cfl_view"-->
 <!--        android:layout_width="wrap_content"-->
 <!--        android:layout_height="wrap_content"-->
@@ -58,7 +57,8 @@
 <!--        app:rv_borderWidth="3dp"-->
 <!--        app:rv_drawCircle="true"-->
 <!--        app:rv_radius="50dp"/>-->
-    <com.fz.roundview.RoundedRatioImageView
+    <com.peihua8858.roundview.RoundedRatioImageView
+        xmlns:aap="http://schemas.android.com/apk/res/com.peihua8858.roundview"
         android:id="@+id/rriv_image"
         android:layout_width="100dp"
         android:layout_height="100dp"
@@ -67,6 +67,10 @@
         app:rv_borderColor="@color/purple_200"
         app:rv_borderWidth="3dp"
 
+        />
+    <com.peihua8858.roundview.RoundedFrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         />
 <!--      app:rv_left_bottom_radius="20dp"
         app:rv_right_top_radius="20dp"

@@ -21,7 +21,7 @@ project.afterEvaluate {
         publications {
             maven(MavenPublication) {
 //                repository(url: uri('../repo')) //仓库的路径，此处是项目根目录下的 repo 的文件夹
-                groupId = 'com.fz.badgeview'
+                groupId = 'com.peihua8858.badgeview'
                 artifactId = 'compiler'
                 version = '1.0.0'
 

@@ -8,7 +8,7 @@ def mavenPwd = "longxl123"
 def sdkVersionName = "1.0.0"
 def sdkVersionNameSnapshot = "1.0.1-SNAPSHOT"
 def pomName = "RoundView"
-def pomGroupId = "com.fz.roundview"
+def pomGroupId = "com.peihua8858.roundview"
 def pomArtifactId = "RoundView"
 def pomPackaging = "aar"
 tasks.withType(JavaCompile) {
