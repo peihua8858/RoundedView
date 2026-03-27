@@ -1,0 +1,40 @@
+[versions]
+agp = "8.10.1"
+autoCommon = "1.2.1"
+autoService = "1.0.1"
+autoServiceAnnotations = "1.1.1"
+javapoet = "1.13.0"
+kotlin = "2.1.10"
+kotlinpoet = "2.2.0"
+kotlinSerialization = "2.1.10" # for ktor s
+kotlinStdlibJdk8 = "1.8.21"
+kotlinxCoroutinesCore = "1.10.2"
+kotlinStdlib = "2.1.20"
+kspApi = "2.1.10-1.0.31"
+ksp = "2.3.6"
+ksp-autoservice = "1.2.0"
+[libraries]
+auto-common = { module = "com.google.auto:auto-common", version.ref = "autoCommon" }
+auto-service = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }
+auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoServiceAnnotations" }
+javapoet = { module = "com.squareup:javapoet", version.ref = "javapoet" }
+kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlinStdlibJdk8" }
+kotlin-stdlib-common = { module = "org.jetbrains.kotlin:kotlin-stdlib-common", version.ref = "kotlinStdlib" }
+kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinpoet" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "kspApi" }
+ksp-autoservice = { group = "dev.zacsweers.autoservice", name = "auto-service-ksp", version.ref = "ksp-autoservice" }
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization" }
+ksp-google = { id = "com.google.devtools.ksp", version.ref = "kspApi" }
+#ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+
+
+
+
