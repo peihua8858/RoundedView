@@ -6,6 +6,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.fz.imageloader.widget.RatioImageView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.peihua8858.roundedview.demo.R
 import com.peihua8858.roundview.annotation.RoundedView
 
 @RoundedView([

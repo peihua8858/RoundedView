@@ -1,11 +1,12 @@
 package com.peihua8858.roundview.compiler
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.TypeSpec
 
 /**
  * Created by dingpeihua on 2017/8/1.
  */
 interface IKspRoundedMethod {
-    fun constructor(typeBuilder: TypeSpec.Builder, clazz: String)
+    fun constructor(typeBuilder: TypeSpec.Builder, classDeclaration: KSClassDeclaration)
 
     /**
      * 设置边框宽度

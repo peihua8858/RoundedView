@@ -1,21 +1,22 @@
 package com.peihua8858.roundview.compiler
 
-import com.google.auto.service.AutoService
-import com.google.common.collect.ImmutableSet
+import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.getClassDeclarationByName
+import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.peihua8858.roundview.annotation.RoundedView
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.TypeSpec
-import com.sun.source.util.Trees
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
-import java.io.IOException
+import com.google.devtools.ksp.symbol.KSFile
+import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.validate
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.TypeSpec
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -23,23 +24,12 @@ import java.nio.file.Paths
 import java.text.MessageFormat
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
-import javax.annotation.processing.AbstractProcessor
-import javax.annotation.processing.ProcessingEnvironment
-import javax.annotation.processing.Processor
-import javax.annotation.processing.RoundEnvironment
-import javax.lang.model.SourceVersion
-import javax.lang.model.element.AnnotationMirror
-import javax.lang.model.element.AnnotationValue
-import javax.lang.model.element.Element
-import javax.lang.model.element.ElementKind
-import javax.lang.model.element.Modifier
-import javax.lang.model.element.TypeElement
-import javax.lang.model.type.DeclaredType
-import javax.lang.model.type.MirroredTypesException
-import javax.tools.Diagnostic
-import javax.tools.StandardLocation
 
+class KspRoundedProcessorProvider : SymbolProcessorProvider {
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+        return KspRoundedProcessor(environment)
+    }
+}
 
 class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     companion object {
@@ -67,55 +57,12 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
                 "    </declare-styleable>"
     }
 
-    private val mBadgeableMethod: IRoundedMethod by lazy {
-        RoundedMethodImpl(PACKAGE_NAME, processingEnv)
+    private val mRoundedMethod: IKspRoundedMethod by lazy {
+        KspRoundedMethodImpl(PACKAGE_NAME, this)
     }
-    private var trees: Trees? = null
     private var mResolver: Resolver? = null
     fun getClassDeclarationByName(name: String): KSClassDeclaration? = mResolver?.getClassDeclarationByName(name)
-    @Synchronized
-    override fun init(processingEnvironment: ProcessingEnvironment?) {
-        super.init(processingEnvironment)
-        try {
-            trees = Trees.instance(processingEnv)
-        } catch (ignored: IllegalArgumentException) {
-            try {
-                // Get original ProcessingEnvironment from Gradle-wrapped one or KAPT-wrapped one.
-                for (field in processingEnv.javaClass.declaredFields) {
-                    if (field.name.equals("processingEnv")) {
-                        field.isAccessible = true
-                        val javacEnv = field.get(processingEnv) as ProcessingEnvironment
-                        trees = Trees.instance(javacEnv)
-                        break
-                    }
-                }
-            } catch (ignored2: Throwable) {
-            }
-        }
-    }
 
-    override fun getSupportedSourceVersion(): SourceVersion? {
-        return SourceVersion.latestSupported()
-    }
-
-    /**
-     * 告知 Processor 哪些注解需要处理
-     *
-     * @return 返回一个 Set 集合，集合内容为自定义注解的包名+类名
-     */
-    override fun getSupportedAnnotationTypes(): Set<String> {
-        val annotationTypes: MutableSet<String> = LinkedHashSet()
-        annotationTypes.add(RoundedView::class.java.canonicalName)
-        return annotationTypes
-    }
-
-    override fun getSupportedOptions(): Set<String>? {
-        if (trees != null) {
-            return ImmutableSet.builder<String>().add(IncrementalAnnotationProcessorType.ISOLATING.processorOption)
-                .build()
-        }
-        return super.getSupportedOptions()
-    }
 
     /**
      * 所有的注解处理都是从这个方法开始的，当 APT 找到所有需要处理的注解后，会回调这个方法。当没有属于该 Processor 处理的注解被使用时，不会回调该方法
@@ -125,127 +72,141 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
      * @return 表示这组 Annotation 是否被这个 Processor 消费，如果消费「返回 true」后续子的 Processor 不会再对这组 Annotation 进行处理
      */
     override fun process(resolver: Resolver): List<KSAnnotated> {
-
-    }
-    override fun process(set: Set<TypeElement?>?, roundEnvironment: RoundEnvironment): Boolean {
-        val elements: Set<Element>? = roundEnvironment.getElementsAnnotatedWith(
-            RoundedView::class.java
-        )
-        if (elements.isNullOrEmpty()) {
-            return true
+        this.mResolver = resolver
+        val symbols = resolver.getSymbolsWithAnnotation("com.peihua8858.roundview.annotation.RoundedView")
+        val (validSymbols, invalidSymbols) = symbols.partition { it.validate() }.toList()
+        return try {
+            processChecked(resolver, symbols, validSymbols, invalidSymbols)
+        } catch (e: Exception) {
+            environment.logger.error(e.stackTraceToString())
+            invalidSymbols
         }
-        processingEnv?.apply {
-            printMessage(
-                Diagnostic.Kind.NOTE,
-                "====================================== RoundedProcessor process START ======================================"
-            )
-            val viewClassSet: MutableSet<String> = HashSet()
-            parseParams(elements, viewClassSet)
-            try {
-                generate(viewClassSet)
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            } catch (e: IOException) {
-                printMessage(
-                    Diagnostic.Kind.ERROR,
-                    "Exception occurred when generating class file."
-                )
-                e.printStackTrace()
-            }
-            printMessage(
-                Diagnostic.Kind.NOTE,
-                "====================================== RoundedProcessor process END ======================================"
-            )
-        }
-        return true
     }
 
-    private fun parseParams(elements: Set<Element>, viewClassSet: MutableSet<String>) {
-        for (element in elements) {
-            checkAnnotationValid(element, RoundedView::class.java)
-            val classElement = element as TypeElement
-            // 获取该注解的值
-            val badgeAnnotation = classElement.getAnnotation(RoundedView::class.java)
-            try {
-                val classes = badgeAnnotation.value
+    @Suppress("SimpleDateFormat")
+    private fun processChecked(
+        resolver: Resolver,
+        symbols: Sequence<KSAnnotated>,
+        validSymbols: List<KSAnnotated>,
+        invalidSymbols: List<KSAnnotated>,
+    ): List<KSAnnotated> {
+        printMessage("Found symbols, symbols.size: ${symbols.toList().size}")
+        printMessage("Found validSymbols, validSymbols.size: ${validSymbols.size}")
+        if (validSymbols.isNotEmpty()) {
+            validSymbols.filterIsInstance<KSClassDeclaration>()
+                .forEach { classDeclaration ->
 
-            } catch (e: MirroredTypesException) {
-                val typeMirrors = e.typeMirrors
-                for (typeMirror in typeMirrors) {
-                    val classTypeMirror = typeMirror as DeclaredType
-                    val classTypeElement = classTypeMirror.asElement() as TypeElement
-                    val qualifiedName = classTypeElement.qualifiedName.toString()
-                    viewClassSet.add(qualifiedName)
+                    // 获取注解参数中的 values 数组
+                    val badgeAnnotation = classDeclaration.annotations.find { it.shortName.asString() == "RoundedView" }
+                    val targetClasses = if (badgeAnnotation != null) {
+                        extractTargetClassesFromAnnotation(badgeAnnotation)
+                    } else {
+                        emptyList()
+                    }
+                    val decClassName = classDeclaration.simpleName.asString()
+                    printMessage("=========================== RoundedProcessor process START ===========================")
+                    printMessage(decClassName + "生成 " + targetClasses.size + " 个")
+                    val classNames = mutableListOf<String>()
+                    printMessage("kspGenDir>>>targetClasses:${targetClasses}")
+                    targetClasses.forEach { targetClass ->
+                        val superPackageName = targetClass.packageName.asString()
+                        val superClassName = targetClass.simpleName.asString()
+                        val className = CLASS_PREFIX + superClassName
+                        classNames.add(className)
+                        printMessage("$superPackageName ====> $superPackageName,superClassName: $superClassName")
+                        printMessage("Target classes from annotation: ${targetClasses.joinToString { it.simpleName.asString() }}")
+                        val date = SimpleDateFormat("yyyy/M/dd HH:mm").format(Date())
+                        val javaDoc = String.format(CLASS_JAVA_DOC, date)
+                        val typeBuilder = com.squareup.kotlinpoet.TypeSpec.classBuilder(className)
+                            .addKdoc(javaDoc)
+                            .addModifiers(KModifier.PUBLIC)
+                            .superclass(ClassName(superPackageName, superClassName))
+                            .addSuperinterface(ClassName(PACKAGE_NAME, "IRoundedView"))
+                            .addProperty(
+                                "mRoundViewDelegate",
+                                ClassName(PACKAGE_NAME, "RoundViewDelegate"),
+                                KModifier.PRIVATE
+                            )
+                        generateMethod(typeBuilder, targetClass)
+                        val file = FileSpec.builder(PACKAGE_NAME, className)
+                            .addType(typeBuilder.build())
+                            .build()
+                        writeFile(file, resolver.getAllFiles().toList())
+                    }
+                    // 路径例如: /xxx/app/build/generated/source/kapt/debug
+                    val kspGenDir = resolver.kspGenDir
+                    printMessage("kspGenDir>>>kspGenDir:${kspGenDir}")
+                    val resOutDir = kspGenDir.resolve("values")
+                    val filePath = Files.createDirectories(resOutDir)
+                    val attrsFile = resOutDir.resolve(ATTRS_XML_PATH)
+                    printMessage("开始生成 attrs.xml, 生成的目录：$filePath")
+                    generateAttrsXml(classNames).let { content ->
+                        try {
+                            Files.write(attrsFile, content.toByteArray(StandardCharsets.UTF_8))
+                            printMessage("生成 attrs.xml 结束")
+                        } catch (e: Exception) {
+                            printMessage(
+                                "生成 attrs.xml 错误,生成的内容：$content\n" +
+                                        e.stackTraceToString()
+                            )
+                        }
+                    }
+                    printMessage("=========================== RoundedProcessor process END ===========================")
                 }
+        }
+        return invalidSymbols
+    }
+
+    private fun writeFile(file: FileSpec, sources: List<KSFile>) {
+        environment.codeGenerator
+            .createNewFile(
+                Dependencies(aggregating = false, sources = sources.toTypedArray()),
+                file.packageName,
+                file.name,
+            )
+            .writer()
+            .use { file.writeTo(it) }
+
+        environment.logger.info("Wrote file: $file")
+    }
+
+    /**
+     * 从 BadgeView 注解中提取 values 参数包含的所有目标类
+     */
+    private fun extractTargetClassesFromAnnotation(annotation: KSAnnotation): List<KSClassDeclaration> {
+        val valuesArgument = annotation.arguments.find { it.name?.asString() == "value" }?.value
+        if (valuesArgument == null || valuesArgument !is List<*>) {
+            return emptyList()
+        }
+
+        return valuesArgument.mapNotNull { value ->
+            if (value is KSType) {
+                value.declaration as? KSClassDeclaration
+            } else {
+                null
             }
         }
     }
 
-    @Throws(IllegalAccessException::class, IOException::class)
-    private fun generate(viewClassSet: Set<String>) {
-        processingEnv?.apply {
-            printMessage(Diagnostic.Kind.NOTE, "生成 " + viewClassSet.size + " 个")
-            val classNames = mutableListOf<String>()
-            val formater = SimpleDateFormat("yyyy/M/dd HH:mm", Locale.US)
-            for (clazz in viewClassSet) {
-                val lastDotIndex = clazz.lastIndexOf(".")
-                val superPackageName = clazz.substring(0, lastDotIndex)
-                val superClassName = clazz.substring(lastDotIndex + 1)
-                val className = CLASS_PREFIX + superClassName
-                classNames.add(className)
-                printMessage(Diagnostic.Kind.NOTE, "$clazz ====> $className")
-                val date = formater.format(Date())
-                val javaDoc = String.format(CLASS_JAVA_DOC, date)
-                val typeBuilder = TypeSpec.classBuilder(className)
-                    .addJavadoc(javaDoc)
-                    .addModifiers(Modifier.PUBLIC)
-                    .superclass(ClassName.get(superPackageName, superClassName))
-                    .addSuperinterface(ClassName.get(PACKAGE_NAME, "IRoundedView"))
-                    .addField(
-                        ClassName.get(PACKAGE_NAME, "RoundViewDelegate"),
-                        "mRoundViewDelegate",
-                        Modifier.PRIVATE
-                    )
-                generateMethod(typeBuilder, clazz)
-                val javaFile = JavaFile.builder(PACKAGE_NAME, typeBuilder.build()).build()
-                javaFile.writeTo(filer)
-            }
-            // 路径例如: /xxx/app/build/generated/source/kapt/debug
-            val kaptPath = processingEnv.kaptGenDir
-            printMessage(Diagnostic.Kind.NOTE, "kaptGenDir>>>kaptPath:${kaptPath}")
-            val projectDir = kaptPath.parent.parent.parent
-            val resOutDir = projectDir.resolve("res").resolve("resValues").resolve(kaptPath.fileName).resolve("values")
-            val filePath = Files.createDirectories(resOutDir)
-            val attrsFile = resOutDir.resolve(ATTRS_XML_PATH)
-            printMessage(Diagnostic.Kind.NOTE, "开始生成 attrs.xml, 生成的目录：$filePath")
-            generateAttrsXml(classNames).let { content ->
-                try {
-                    Files.write(attrsFile, content.toString().toByteArray(StandardCharsets.UTF_8))
-                    printMessage(Diagnostic.Kind.NOTE, "生成 attrs.xml 结束")
-                } catch (e: Exception) {
-                    printMessage(Diagnostic.Kind.NOTE, "生成 attrs.xml 错误,生成的内容：$content\n" +
-                                e.stackTraceToString()
-                    )
-                }
-            }
-        }
-    }
 
-    private val ProcessingEnvironment.kaptGenDir: Path
+    @OptIn(KspExperimental::class)
+    private val Resolver.kspGenDir: Path
         get() {
-            val kaptOut = options["kapt.kotlin.generated"]
-            if (kaptOut != null) {
-                val path = Paths.get(kaptOut)
-                // 路径例如: /xxx/app/build/generated/source/kapt/debug
-                printMessage(Diagnostic.Kind.NOTE, "kaptGenDir>>>kaptOut:${path}")
-                return path
-            }
-            val foPath = filer.getResource(StandardLocation.SOURCE_OUTPUT, "", "res")
-            printMessage(Diagnostic.Kind.NOTE, "kaptGenDir>>>SOURCE_OUTPUT:${foPath.name}")
-            return Paths.get(foPath.name).parent
+            val path = Paths.get("build/generated/res/resValues");
+            val file = getAllFiles().first()
+            val filePath = file.filePath
+            printMessage("kspGenDir>>>file:${filePath}")
+            val moduleName = getModuleName().asString()
+            printMessage("kspGenDir>>>moduleName:${moduleName}")
+            val (name, buildType) = moduleName.split("_")
+            printMessage("kspGenDir>>>name:${name},buildType:$buildType")
+            val outDir = Paths.get(filePath.substring(0, filePath.indexOf(name))).resolve(name)
+            printMessage("kspGenDir>>>outDir:${outDir}")
+            return outDir.resolve(path).resolve(buildType)
         }
 
     private fun generateAttrsXml(classNames: List<String>): String {
+        printMessage("开始生成 attrs.xml, generateAttrsXml：$classNames")
         val content = StringBuilder()
         content.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
         content.append("\n")
@@ -259,95 +220,26 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
         return content.toString()
     }
 
-    private fun generateMethod(typeBuilder: TypeSpec.Builder, clazz: String) {
-        mBadgeableMethod.apply {
+    private fun generateMethod(typeBuilder: TypeSpec.Builder, classDeclaration: KSClassDeclaration) {
+        mRoundedMethod.apply {
             val methods = javaClass.declaredMethods
             for (method in methods) {
                 val parameters = method.parameters
                 if (parameters.size == 2) {
-                    method.invoke(this, typeBuilder, clazz)
+                    method.invoke(this, typeBuilder, classDeclaration)
                 } else {
                     method.invoke(this, typeBuilder)
                 }
             }
-//            setBorderWidth(typeBuilder)
-//            setDrawBorder(typeBuilder)
-//            setBorderColor(typeBuilder)
-//            setRadius(typeBuilder)
-//            setRadiusArr(typeBuilder)
-//            setDrawCircle(typeBuilder)
-//            onLayout(typeBuilder)
-//            onDraw(typeBuilder)
-//            setRoundedCorners(typeBuilder)
         }
-
     }
 
-    private fun checkAnnotationValid(annotatedElement: Element, clazz: Class<*>): Boolean {
-        if (annotatedElement.kind != ElementKind.CLASS) {
-            error(annotatedElement, "%s must be declared on class.", clazz.simpleName)
-            return false
-        }
-        if (annotatedElement.modifiers.contains(Modifier.PRIVATE)) {
-            error(
-                annotatedElement,
-                "%s must can not be private.",
-                (annotatedElement as TypeElement).qualifiedName
-            )
-            return false
-        }
-        return true
+
+    fun printMessage(msg: String) {
+        environment.printMessage(msg)
     }
 
-    private fun error(element: Element, message: String, vararg args: Any) {
-        var message1: String = message
-        if (args.isNotEmpty()) {
-            message1 = String.format(message1, *args)
-        }
-        printMessage(Diagnostic.Kind.ERROR, message1, element)
-    }
-
-    fun printMessage(kind: Diagnostic.Kind, msg: CharSequence) {
-        processingEnv?.printMessage(kind, msg)
-    }
-
-    fun ProcessingEnvironment.printMessage(kind: Diagnostic.Kind, msg: CharSequence) {
-        messager?.printMessage(kind, msg)
-    }
-
-    fun printMessage(kind: Diagnostic.Kind?, msg: CharSequence?, e: Element?) {
-        processingEnv?.printMessage(kind, msg, e)
-    }
-
-    fun ProcessingEnvironment.printMessage(kind: Diagnostic.Kind?, msg: CharSequence?, e: Element?) {
-        messager?.printMessage(kind, msg, e)
-    }
-
-    fun printMessage(kind: Diagnostic.Kind?, msg: CharSequence?, e: Element?, a: AnnotationMirror?) {
-        processingEnv?.printMessage(kind, msg, e, a)
-    }
-
-    fun ProcessingEnvironment.printMessage(kind: Diagnostic.Kind?, msg: CharSequence?, e: Element?, a: AnnotationMirror?) {
-        messager?.printMessage(kind, msg, e, a)
-    }
-
-    fun printMessage(
-        kind: Diagnostic.Kind?,
-        msg: CharSequence?,
-        e: Element?,
-        a: AnnotationMirror?,
-        v: AnnotationValue?,
-    ) {
-        processingEnv?.printMessage(kind, msg, e, a, v)
-    }
-
-    fun ProcessingEnvironment.printMessage(
-        kind: Diagnostic.Kind?,
-        msg: CharSequence?,
-        e: Element?,
-        a: AnnotationMirror?,
-        v: AnnotationValue?,
-    ) {
-        messager?.printMessage(kind, msg, e, a, v)
+    fun SymbolProcessorEnvironment.printMessage(msg: String) {
+        logger.info(msg)
     }
 }
