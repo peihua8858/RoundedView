@@ -11,10 +11,6 @@ java {
 dependencies {
     compileOnly 'com.google.android:android:4.1.1.4'
 }
-task sourceJar(type: Jar) {
-    from sourceSets.main.allSource
-//    classifier "sources"
-}
 group = 'com.github.peihua8858'
 afterEvaluate {
     publishing {
@@ -25,7 +21,6 @@ afterEvaluate {
                 artifactId = 'annotation'
                 version = '1.0.4'
                 from(components.getByName("java"))
-                artifact sourceJar
             }
         }
     }
