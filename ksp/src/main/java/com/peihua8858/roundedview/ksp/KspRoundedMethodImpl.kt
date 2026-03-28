@@ -1,4 +1,4 @@
-package com.peihua8858.roundview.compiler
+package com.peihua8858.roundedview.ksp
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.BOOLEAN

@@ -3,7 +3,6 @@ plugins {
     id 'java-library'
     id 'kotlin'
     id 'maven-publish'
-//    id 'kotlin-kapt'
 }
 kotlin { jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
 java {
@@ -11,14 +10,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 dependencies {
-    implementation 'com.github.peihua8858.RoundedView:annotation:1.0.6'
-//    implementation project(':annotation')
-    compileOnly libs.auto.service.annotations
-    compileOnly libs.auto.service
-    implementation libs.auto.common
-    implementation libs.javapoet
-    implementation "net.ltgt.gradle.incap:incap:0.3"
-    compileOnly "net.ltgt.gradle.incap:incap-processor:0.3"
+    compileOnly(libs.ksp.api)
+    implementation(libs.kotlinpoet.ksp)
 }
 group = 'com.github.peihua8858'
 afterEvaluate {
@@ -27,7 +20,7 @@ afterEvaluate {
             // Creates a Maven publication called "release".
             release(MavenPublication) {
                 groupId = 'com.github.peihua8858.RoundedView'
-                artifactId = 'compiler'
+                artifactId = 'ksp'
                 version = '1.0.4'
                 from(components.getByName("java"))
             }
@@ -35,4 +28,4 @@ afterEvaluate {
     }
 }
 //apply from: "push_local_maven.gradle"
-//apply from: "push_maven_new.gradle"
+//apply from: "push_maven.gradle"

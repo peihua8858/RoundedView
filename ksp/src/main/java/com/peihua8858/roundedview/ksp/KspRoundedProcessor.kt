@@ -1,4 +1,4 @@
-package com.peihua8858.roundview.compiler
+package com.peihua8858.roundedview.ksp
 
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.getClassDeclarationByName
@@ -95,7 +95,6 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
         if (validSymbols.isNotEmpty()) {
             validSymbols.filterIsInstance<KSClassDeclaration>()
                 .forEach { classDeclaration ->
-
                     // 获取注解参数中的 values 数组
                     val badgeAnnotation = classDeclaration.annotations.find { it.shortName.asString() == "RoundedView" }
                     val targetClasses = if (badgeAnnotation != null) {
@@ -200,7 +199,11 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
             printMessage("kspGenDir>>>moduleName:${moduleName}")
             val (name, buildType) = moduleName.split("_")
             printMessage("kspGenDir>>>name:${name},buildType:$buildType")
-            val outDir = Paths.get(filePath.substring(0, filePath.indexOf(name))).resolve(name)
+            var moduleIndex = filePath.indexOf(name)
+            if (moduleIndex == -1) {
+                moduleIndex = filePath.length
+            }
+            val outDir = Paths.get(filePath.substring(0, moduleIndex)).resolve(name)
             printMessage("kspGenDir>>>outDir:${outDir}")
             return outDir.resolve(path).resolve(buildType)
         }
@@ -240,6 +243,6 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
     }
 
     fun SymbolProcessorEnvironment.printMessage(msg: String) {
-        logger.info(msg)
+        logger.warn(msg)
     }
 }
