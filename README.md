@@ -78,7 +78,7 @@ public class MainActivity extends BaseActivity{
 }
 ```
 或
-#### Java
+#### Gradle
 ```groovy
 ksp {
     arg("classes", ["android.view.View",
