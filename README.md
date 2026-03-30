@@ -29,8 +29,12 @@ repositories {
 
 dependencies {
     implementation 'com.github.peihua8858.RoundedView:annotation:${latestVersion}'
-    kapt 'com.github.peihua8858.RoundedView:compiler:${latestVersion}'
     implementation 'com.github.peihua8858.RoundedView:api:${latestVersion}'
+    annotationProcessor 'com.github.peihua8858.RoundedView:compiler:${latestVersion}'
+    //kapt
+    kapt 'com.github.peihua8858.RoundedView:compiler:${latestVersion}'
+    //ksp
+    ksp 'com.github.peihua8858.RoundedView:ksp:${latestVersion}'
 }
 ```
 
