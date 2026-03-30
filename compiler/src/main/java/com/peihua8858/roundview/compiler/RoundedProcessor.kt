@@ -121,61 +121,25 @@ class RoundedProcessor : AbstractProcessor() {
      * @return 表示这组 Annotation 是否被这个 Processor 消费，如果消费「返回 true」后续子的 Processor 不会再对这组 Annotation 进行处理
      */
     override fun process(set: Set<TypeElement?>?, roundEnvironment: RoundEnvironment): Boolean {
-        val elements: Set<Element>? = roundEnvironment.getElementsAnnotatedWith(
-            RoundedView::class.java
-        )
-        if (elements.isNullOrEmpty()) {
+        val result = roundEnvironment.classes
+        if (result.isEmpty()) {
             return true
         }
-        processingEnv?.apply {
-            printMessage(
-                Diagnostic.Kind.NOTE,
-                "====================================== RoundedProcessor process START ======================================"
-            )
-            val viewClassSet: MutableSet<String> = HashSet()
-            parseParams(elements, viewClassSet)
-            try {
-                generate(viewClassSet)
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            } catch (e: IOException) {
-                printMessage(
-                    Diagnostic.Kind.ERROR,
-                    "Exception occurred when generating class file."
-                )
-                e.printStackTrace()
-            }
-            printMessage(
-                Diagnostic.Kind.NOTE,
-                "====================================== RoundedProcessor process END ======================================"
-            )
+        printMessage(Diagnostic.Kind.NOTE, "====================== RoundedProcessor process START ======================")
+        try {
+            generate(result)
+        } catch (e: IllegalAccessException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            printMessage(Diagnostic.Kind.ERROR, "Exception occurred when generating class file.")
+            e.printStackTrace()
         }
+        printMessage(Diagnostic.Kind.NOTE, "====================== RoundedProcessor process END ======================")
         return true
     }
 
-    private fun parseParams(elements: Set<Element>, viewClassSet: MutableSet<String>) {
-        for (element in elements) {
-            checkAnnotationValid(element, RoundedView::class.java)
-            val classElement = element as TypeElement
-            // 获取该注解的值
-            val badgeAnnotation = classElement.getAnnotation(RoundedView::class.java)
-            try {
-                val classes = badgeAnnotation.value
-
-            } catch (e: MirroredTypesException) {
-                val typeMirrors = e.typeMirrors
-                for (typeMirror in typeMirrors) {
-                    val classTypeMirror = typeMirror as DeclaredType
-                    val classTypeElement = classTypeMirror.asElement() as TypeElement
-                    val qualifiedName = classTypeElement.qualifiedName.toString()
-                    viewClassSet.add(qualifiedName)
-                }
-            }
-        }
-    }
-
     @Throws(IllegalAccessException::class, IOException::class)
-    private fun generate(viewClassSet: Set<String>) {
+    private fun generate(viewClassSet: List<String>) {
         processingEnv?.apply {
             printMessage(Diagnostic.Kind.NOTE, "生成 " + viewClassSet.size + " 个")
             val classNames = mutableListOf<String>()
@@ -223,7 +187,52 @@ class RoundedProcessor : AbstractProcessor() {
             }
         }
     }
-
+    private val symbolsVisitor = HashSet<String>()
+    private val RoundEnvironment.classes: List<String>
+        get() {
+            val classesStrs = processingEnv.options["classes"]
+            printMessage("classes>>>classesStrs:${classesStrs}")
+            val result = mutableListOf<String>()
+            if (!classesStrs.isNullOrEmpty()) {
+                val classes = classesStrs.split("|").map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .distinct()
+                classes.forEach {
+                    if (it.isNotEmpty()) {
+                        if (symbolsVisitor.contains(it)) {
+                            return@forEach
+                        }
+                        result.add(it)
+                        symbolsVisitor.add(it)
+                    }
+                }
+                printMessage("classes>>>result:${result}")
+                return result
+            } else {
+                val elements: Set<Element>? = getElementsAnnotatedWith(RoundedView::class.java)
+                if (elements.isNullOrEmpty()) {
+                    return emptyList()
+                }
+                elements.forEach {
+                    checkAnnotationValid(it, RoundedView::class.java)
+                    val classElement = it as TypeElement
+                    // 获取该注解的值
+                    val badgeAnnotation = classElement.getAnnotation(RoundedView::class.java)
+                    try {
+                        badgeAnnotation.value
+                    } catch (e: MirroredTypesException) {
+                        val typeMirrors = e.typeMirrors
+                        for (typeMirror in typeMirrors) {
+                            val classTypeMirror = typeMirror as DeclaredType
+                            val classTypeElement = classTypeMirror.asElement() as TypeElement
+                            val qualifiedName = classTypeElement.qualifiedName.toString()
+                            result.add(qualifiedName)
+                        }
+                    }
+                }
+                return result
+            }
+        }
     private val ProcessingEnvironment.kaptGenDir: Path
         get() {
             val kaptOut = options["kapt.kotlin.generated"]
@@ -263,15 +272,6 @@ class RoundedProcessor : AbstractProcessor() {
                     method.invoke(this, typeBuilder)
                 }
             }
-//            setBorderWidth(typeBuilder)
-//            setDrawBorder(typeBuilder)
-//            setBorderColor(typeBuilder)
-//            setRadius(typeBuilder)
-//            setRadiusArr(typeBuilder)
-//            setDrawCircle(typeBuilder)
-//            onLayout(typeBuilder)
-//            onDraw(typeBuilder)
-//            setRoundedCorners(typeBuilder)
         }
 
     }
@@ -342,5 +342,12 @@ class RoundedProcessor : AbstractProcessor() {
         v: AnnotationValue?,
     ) {
         messager?.printMessage(kind, msg, e, a, v)
+    }
+    fun printMessage(msg: CharSequence) {
+        processingEnv?.printMessage(msg)
+    }
+
+    fun ProcessingEnvironment.printMessage(msg: CharSequence) {
+        messager?.printMessage(Diagnostic.Kind.NOTE, msg)
     }
 }

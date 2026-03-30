@@ -70,7 +70,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     }
 }
 ```
-
+或
+#### Java
+```java
+@RoundedView({View.class, TextView.class, FrameLayout.class})
+public class MainActivity extends BaseActivity{
+}
+```
+或
+#### Java
+```groovy
+ksp {
+    arg("classes", ["android.view.View",
+                    "android.widget.TextView",
+                    "android.widget.ImageView",
+                    "android.widget.RadioButton",
+                    "android.widget.FrameLayout"].join("|"))
+}
+```
 ### 2、xml 布局引入
 ```xml
  <com.fz.roundview.RoundedLinearLayout

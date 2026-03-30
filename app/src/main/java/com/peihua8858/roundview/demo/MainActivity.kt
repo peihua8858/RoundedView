@@ -9,17 +9,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.peihua8858.roundedview.demo.R
 import com.peihua8858.roundview.annotation.RoundedView
 
-@RoundedView([
-    View::class,  // 对应 com.fz.badgeview.BadgeView，不想用这个类的话就删了这一行
-    ImageView::class,  // 对应 com.fz.badgeview.BadgeImageView，不想用这个类的话就删了这一行
-    RatioImageView::class,// 对应 com.fz.badgeview.BadgeRatioImageView，不想用这个类的话就删了这一行
-    TextView::class,  // 对应 com.fz.badgeview.BadgeFloatingTextView，不想用这个类的话就删了这一行
-    RadioButton::class,  // 对应 com.fz.badgeview.BadgeRadioButton，不想用这个类的话就删了这一行
-    LinearLayout::class,  // 对应 com.fz.badgeview.BadgeLinearLayout，不想用这个类的话就删了这一行
-    FrameLayout::class,  // 对应 com.fz.badgeview.BadgeFrameLayout，不想用这个类的话就删了这一行
-    RelativeLayout::class,  // 对应 com.fz.badgeview.BadgeRelativeLayout，不想用这个类的话就删了这一行
-    FloatingActionButton::class]
-)
+//@RoundedView([
+//    View::class,  // 对应 com.fz.badgeview.BadgeView，不想用这个类的话就删了这一行
+//    ImageView::class,  // 对应 com.fz.badgeview.BadgeImageView，不想用这个类的话就删了这一行
+//    RatioImageView::class,// 对应 com.fz.badgeview.BadgeRatioImageView，不想用这个类的话就删了这一行
+//    TextView::class,  // 对应 com.fz.badgeview.BadgeFloatingTextView，不想用这个类的话就删了这一行
+//    RadioButton::class,  // 对应 com.fz.badgeview.BadgeRadioButton，不想用这个类的话就删了这一行
+//    LinearLayout::class,  // 对应 com.fz.badgeview.BadgeLinearLayout，不想用这个类的话就删了这一行
+//    FrameLayout::class,  // 对应 com.fz.badgeview.BadgeFrameLayout，不想用这个类的话就删了这一行
+//    RelativeLayout::class,  // 对应 com.fz.badgeview.BadgeRelativeLayout，不想用这个类的话就删了这一行
+//    FloatingActionButton::class]
+//)
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

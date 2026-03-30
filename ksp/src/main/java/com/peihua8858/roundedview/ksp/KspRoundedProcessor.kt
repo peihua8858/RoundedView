@@ -57,10 +57,9 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
                 "    </declare-styleable>"
     }
 
-    private val mRoundedMethod: IKspRoundedMethod by lazy {
-        KspRoundedMethodImpl(PACKAGE_NAME, this)
-    }
+    private val mRoundedMethod: IKspRoundedMethod by lazy { KspRoundedMethodImpl(PACKAGE_NAME, this) }
     private var mResolver: Resolver? = null
+    private val symbolsVisitor = HashSet<String>()
     fun getClassDeclarationByName(name: String): KSClassDeclaration? = mResolver?.getClassDeclarationByName(name)
 
 
@@ -72,107 +71,96 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
      * @return 表示这组 Annotation 是否被这个 Processor 消费，如果消费「返回 true」后续子的 Processor 不会再对这组 Annotation 进行处理
      */
     override fun process(resolver: Resolver): List<KSAnnotated> {
+        printMessage("====================================== BadgeProcessor process START ======================================")
         this.mResolver = resolver
-        val symbols = resolver.getSymbolsWithAnnotation("com.peihua8858.roundview.annotation.RoundedView")
-        val (validSymbols, invalidSymbols) = symbols.partition { it.validate() }.toList()
+        val result = resolver.classes
         return try {
-            processChecked(resolver, symbols, validSymbols, invalidSymbols)
-        } catch (e: Exception) {
-            environment.logger.error(e.stackTraceToString())
-            invalidSymbols
+            processChecked(resolver, result.first)
+            result.first
+        } catch (e: Throwable) {
+            printErrorMessage("build error:" + e.stackTraceToString())
+            result.second
         }
     }
 
     @Suppress("SimpleDateFormat")
-    private fun processChecked(
-        resolver: Resolver,
-        symbols: Sequence<KSAnnotated>,
-        validSymbols: List<KSAnnotated>,
-        invalidSymbols: List<KSAnnotated>,
-    ): List<KSAnnotated> {
-        printMessage("Found symbols, symbols.size: ${symbols.toList().size}")
-        printMessage("Found validSymbols, validSymbols.size: ${validSymbols.size}")
+    private fun processChecked(resolver: Resolver, validSymbols: List<KSClassDeclaration>) {
         if (validSymbols.isNotEmpty()) {
-            validSymbols.filterIsInstance<KSClassDeclaration>()
-                .forEach { classDeclaration ->
-                    // 获取注解参数中的 values 数组
-                    val badgeAnnotation = classDeclaration.annotations.find { it.shortName.asString() == "RoundedView" }
-                    val targetClasses = if (badgeAnnotation != null) {
-                        extractTargetClassesFromAnnotation(badgeAnnotation)
-                    } else {
-                        emptyList()
-                    }
-                    val decClassName = classDeclaration.simpleName.asString()
-                    printMessage("=========================== RoundedProcessor process START ===========================")
-                    printMessage(decClassName + "生成 " + targetClasses.size + " 个")
-                    val classNames = mutableListOf<String>()
-                    printMessage("kspGenDir>>>targetClasses:${targetClasses}")
-                    targetClasses.forEach { targetClass ->
-                        val superPackageName = targetClass.packageName.asString()
-                        val superClassName = targetClass.simpleName.asString()
-                        val className = CLASS_PREFIX + superClassName
-                        classNames.add(className)
-                        printMessage("$superPackageName ====> $superPackageName,superClassName: $superClassName")
-                        printMessage("Target classes from annotation: ${targetClasses.joinToString { it.simpleName.asString() }}")
-                        val date = SimpleDateFormat("yyyy/M/dd HH:mm").format(Date())
-                        val javaDoc = String.format(CLASS_JAVA_DOC, date)
-                        val typeBuilder = com.squareup.kotlinpoet.TypeSpec.classBuilder(className)
-                            .addKdoc(javaDoc)
-                            .addModifiers(KModifier.PUBLIC)
-                            .superclass(ClassName(superPackageName, superClassName))
-                            .addSuperinterface(ClassName(PACKAGE_NAME, "IRoundedView"))
-                            .addProperty(
-                                "mRoundViewDelegate",
-                                ClassName(PACKAGE_NAME, "RoundViewDelegate"),
-                                KModifier.PRIVATE
-                            )
-                        generateMethod(typeBuilder, targetClass)
-                        val file = FileSpec.builder(PACKAGE_NAME, className)
-                            .addType(typeBuilder.build())
-                            .build()
-                        writeFile(file, resolver.getAllFiles().toList())
-                    }
-                    // 路径例如: /xxx/app/build/generated/source/kapt/debug
-                    val kspGenDir = resolver.kspGenDir
-                    printMessage("kspGenDir>>>kspGenDir:${kspGenDir}")
-                    val resOutDir = kspGenDir.resolve("values")
-                    val filePath = Files.createDirectories(resOutDir)
-                    val attrsFile = resOutDir.resolve(ATTRS_XML_PATH)
-                    printMessage("开始生成 attrs.xml, 生成的目录：$filePath")
-                    generateAttrsXml(classNames).let { content ->
-                        try {
-                            Files.write(attrsFile, content.toByteArray(StandardCharsets.UTF_8))
-                            printMessage("生成 attrs.xml 结束")
-                        } catch (e: Exception) {
-                            printMessage(
-                                "生成 attrs.xml 错误,生成的内容：$content\n" +
-                                        e.stackTraceToString()
-                            )
-                        }
-                    }
-                    printMessage("=========================== RoundedProcessor process END ===========================")
+            printMessage("生成 " + validSymbols.size + " 个")
+            printMessage("Target classes from annotation: ${validSymbols.joinToString { it.simpleName.asString() }}")
+            val classNames = mutableListOf<String>()
+            validSymbols.forEach { targetClass ->
+                val superPackageName = targetClass.packageName.asString()
+                val superClassName = targetClass.simpleName.asString()
+                val className = CLASS_PREFIX + superClassName
+                classNames.add(className)
+                printMessage("$superPackageName ====> $superPackageName,superClassName: $superClassName")
+                val date = SimpleDateFormat("yyyy/M/dd HH:mm").format(Date())
+                val javaDoc = String.format(CLASS_JAVA_DOC, date)
+                val typeBuilder = TypeSpec.classBuilder(className)
+                    .addKdoc(javaDoc)
+                    .addModifiers(KModifier.PUBLIC)
+                    .superclass(ClassName(superPackageName, superClassName))
+                    .addSuperinterface(ClassName(PACKAGE_NAME, "IRoundedView"))
+                    .addProperty(
+                        "mRoundViewDelegate",
+                        ClassName(PACKAGE_NAME, "RoundViewDelegate"),
+                        KModifier.PRIVATE
+                    )
+                generateMethod(typeBuilder, targetClass)
+                val file = FileSpec.builder(PACKAGE_NAME, className)
+                    .addType(typeBuilder.build())
+                    .build()
+                writeFile(file, resolver.getAllFiles().toList())
+            }
+            // 路径例如: /xxx/app/build/generated/source/kapt/debug
+            val kspGenDir = resolver.kspGenDir
+            printMessage("kspGenDir>>>kspGenDir:${kspGenDir}")
+            val resOutDir = kspGenDir.resolve("values")
+            val filePath = Files.createDirectories(resOutDir)
+            val attrsFile = resOutDir.resolve(ATTRS_XML_PATH)
+            printMessage("开始生成 attrs.xml, 生成的目录：$filePath")
+            generateAttrsXml(classNames).let { content ->
+                try {
+                    Files.write(attrsFile, content.toByteArray(StandardCharsets.UTF_8))
+                    printMessage("生成 attrs.xml 结束")
+                } catch (e: Exception) {
+                    printMessage(
+                        "生成 attrs.xml 错误,生成的内容：$content\n" +
+                                e.stackTraceToString()
+                    )
                 }
+            }
+            printMessage("====================================== BadgeProcessor process END ======================================")
         }
-        return invalidSymbols
-    }
-
-    private fun writeFile(file: FileSpec, sources: List<KSFile>) {
-        environment.codeGenerator
-            .createNewFile(
-                Dependencies(aggregating = false, sources = sources.toTypedArray()),
-                file.packageName,
-                file.name,
-            )
-            .writer()
-            .use { file.writeTo(it) }
-
-        environment.logger.info("Wrote file: $file")
     }
 
     /**
-     * 从 BadgeView 注解中提取 values 参数包含的所有目标类
+     * 生成文件
+     * sources =resolver.getAllFiles().toList()
      */
-    private fun extractTargetClassesFromAnnotation(annotation: KSAnnotation): List<KSClassDeclaration> {
+    private fun writeFile(file: FileSpec, sources: List<KSFile>) {
+        try {
+            environment.codeGenerator
+                .createNewFile(
+                    Dependencies(aggregating = true, sources = sources.toTypedArray()),
+                    file.packageName,
+                    file.name,
+                )
+                .writer()
+                .use { file.writeTo(it) }
+        } catch (e: FileAlreadyExistsException) {
+            printWarnMessage(">>>>>>file already exists, skip: ${file.packageName}.${file.name},${e.message}")
+        }
+    }
+
+    /**
+     * 从 RoundedView 注解中提取 values 参数包含的所有目标类
+     */
+    private fun extractTargetClassesFromAnnotation(annotation: KSAnnotation?): List<KSClassDeclaration> {
+        if (annotation == null) {
+            return emptyList()
+        }
         val valuesArgument = annotation.arguments.find { it.name?.asString() == "value" }?.value
         if (valuesArgument == null || valuesArgument !is List<*>) {
             return emptyList()
@@ -187,6 +175,42 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
         }
     }
 
+    private val Resolver.classes: Pair<List<KSClassDeclaration>, List<KSAnnotated>>
+        get() {
+            val classesStrs = environment.options["classes"]
+            printMessage("classes>>>classesStrs:${classesStrs}")
+            val result = mutableListOf<KSClassDeclaration>()
+            if (!classesStrs.isNullOrEmpty()) {
+                val invalidSymbols = mutableListOf<KSAnnotated>()
+                val classes = classesStrs.split("|").map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .distinct()
+                classes.forEach {
+                    val clazz = getClassDeclarationByName(it)
+                    if (clazz != null) {
+                        if (symbolsVisitor.contains(it)) {
+                            invalidSymbols.add(clazz)
+                            return@forEach
+                        }
+                        result.add(clazz)
+                        symbolsVisitor.add(it)
+                    }
+                }
+                printMessage("classes>>>result:${result}")
+                return result to invalidSymbols
+            } else {
+                val symbols = getSymbolsWithAnnotation("com.peihua8858.roundview.annotation.RoundedView")
+                val (validSymbols, invalidSymbols) = symbols.partition { it.validate() }.toList()
+                printMessage("classes>>>symbols:${symbols}")
+                val result = mutableListOf<KSClassDeclaration>()
+                validSymbols.filterIsInstance<KSClassDeclaration>().forEach { classDeclaration ->
+                    val badgeAnnotation = classDeclaration.annotations.find { it.shortName.asString() == "RoundedView" }
+                    val targetClasses = extractTargetClassesFromAnnotation(badgeAnnotation)
+                    result.addAll(targetClasses)
+                }
+                return result to invalidSymbols
+            }
+        }
 
     @OptIn(KspExperimental::class)
     private val Resolver.kspGenDir: Path
@@ -237,12 +261,33 @@ class KspRoundedProcessor(private val environment: SymbolProcessorEnvironment) :
         }
     }
 
-
     fun printMessage(msg: String) {
         environment.printMessage(msg)
     }
 
     fun SymbolProcessorEnvironment.printMessage(msg: String) {
+        logger.info(msg)
+    }
+
+    fun printWarnMessage(msg: String) {
+        environment.printWarnMessage(msg)
+    }
+
+    /**
+     * 打印错误
+     */
+    fun SymbolProcessorEnvironment.printWarnMessage(msg: String) {
         logger.warn(msg)
+    }
+
+    fun printErrorMessage(msg: String) {
+        environment.printErrorMessage(msg)
+    }
+
+    /**
+     * 打印错误
+     */
+    fun SymbolProcessorEnvironment.printErrorMessage(msg: String) {
+        logger.error(msg)
     }
 }
